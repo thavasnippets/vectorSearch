@@ -103,5 +103,6 @@ This makes them suitable for applications such as:
   - Search by Image
       1. Read the Image and convert it into array
       2. Find the matching using dot product and cosine similarity
+      3. For More understaing on cosine Similarity refer (https://www.machinelearningplus.com/nlp/cosine-similarity/)
    
     
