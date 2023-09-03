@@ -1,4 +1,6 @@
-Let's start from the basics
+
+# What is Vector? 
+Let's start from the basic
 
 **Vector:** Quantity with a _magnitude_ and a _direction_
 
@@ -75,6 +77,8 @@ Representation: Vectors can be represented in various ways,
 
 Now I am sure you might have fair re-collection or understanding of vectors
 
+# Vector Database
+
 A **vector database** is a type of database that stores and retrieves data using vectors as the fundamental data representation (Data points in a multi-dimensional space).
 
 Each dimension in the space corresponds to a specific feature or attribute of the data.
@@ -94,7 +98,9 @@ This makes them suitable for applications such as:
 - Vector databases are engineered to perform high-speed similarity searches in massive datasets
 
   # Demo
-  Lets create application for images matching
+  
+  **UseCase**
+  Create a Image Search application. Store the multi-dimensional vector in SQLite DB. Use cosine based search to find the similarity 
   
   **Steps**
   - Data preparation 
@@ -128,7 +134,7 @@ This makes them suitable for applications such as:
   - Search by Image
       1. Read the Image and convert it into array
       2. Find the matching using dot product and cosine similarity
-      3. For More understaing on cosine Similarity refer (https://www.machinelearningplus.com/nlp/cosine-similarity/)
+      3. For More understating on cosine Similarity refer (https://www.machinelearningplus.com/nlp/cosine-similarity/)
    ``` python
        def cosine_similarity(a, b):
             # Ensure that both vectors have the same length
@@ -190,3 +196,4 @@ This makes them suitable for applications such as:
         print(f"Vector ID: {vec_id}, file_name: {file_name}, Similarity: {similarity}")
    ```
     
+**Happy Coding!**
