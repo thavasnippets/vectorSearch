@@ -4,7 +4,6 @@ Let's start from the basic
 
 **Vector:** Quantity with a _magnitude_ and a _direction_
 
-Magnitude is the size of a mathematical object, a property which determines whether the object is larger or smaller than other objects of the same kind.
 
 **Magnitude** : It's the size of an object, a property which determines whether the object is larger or smaller than other objects of the same kind.
 
@@ -77,65 +76,71 @@ Representation: Vectors can be represented in various ways,
 
 Now I am sure you might have fair re-collection or understanding of vectors
 
-# Vector Database
+# Vector Search
 
-A **vector database** is a type of database that stores and retrieves data using vectors as the fundamental data representation (Data points in a multi-dimensional space).
+Its Similarity based search. here you are going to find the object based on a similarity measure. There are multiple algorithms to find the similarity such as Euclidean distance, cosine similarity, or Jaccard .
 
-Each dimension in the space corresponds to a specific feature or attribute of the data.
+In this article lets explore cosine search
 
-Vector databases are particularly useful for working with high-dimensional data, such as images, audio, text, and other complex data types.
+**Usecase 1**
 
-In this, each data item is represented as a vector of numerical values, where each value corresponds to a feature of the data.
+Let's start from the basics 
 
-These vectors can then be indexed and queried for various purposes, such as similarity search, clustering, classification, and recommendation systems.
+consider we have 2 statements 
 
-This makes them suitable for applications such as:
+1. Hi Sam
+2. Sam
 
-- Content-based Retrieval: image and video search
-- Natural Language Processing (NLP): Find similar words or sentences based on their semantic meanings.
-- Recommendation Systems: For efficient recommendation of items based on similarity to a user's preferences.
-- Anomaly Detection: By identifying deviations from normal patterns.
-- Vector databases are engineered to perform high-speed similarity searches in massive datasets
+| **Title** 	| **Hi** 	| **Sam** 	|
+|-----------	|--------	|---------	|
+| Hi Sam    	| 1      	| 1       	|
+| Sam       	| 0      	| 1       	|
+
+Let's plot it in the graph
+
+![Alt text](cosine_graph_matching.png)
+
+**Usecase 2**
+
+lets have three sample sentence
+
+1. AWS PaaS cloud developer
+
+2. Azure PaaS Developer
+
+3. RF Tester
+
+| **Title**                 	| **AWS** 	| **PaaS** 	| **Cloud** 	| **Developer** 	| **Azure** 	| **RF** 	| **Tester** 	|
+|---------------------------	|---------	|----------	|-----------	|---------------	|-----------	|--------	|------------	|
+| AWS PaaS Cloud Developer  	| 1       	| 1        	| 1         	| 1             	| 0         	| 0      	| 0          	|
+| Azure PaaS Developer      	| 0       	| 1        	| 0         	| 1             	| 1         	| 0      	| 0          	|
+| RF Tester                 	| 0       	| 0        	| 0         	| 0             	| 0         	| 1      	| 1          	|
+
+Here we need to plot 6-dimensional graph to plot the same.
+
+For this we can make use of the cosine formula as below
+
+![Alt text](cosine_similarity_formula.png)
+
+let's find the similarity of first 2 statements.
+
+    A . B = ( 1 X 0 ) + ( 1 X 1 ) + ( 1 X 0 ) + ( 1 X 1 ) + ( 0 X 1 ) + ( 0 X 0 ) + (0 X 0)= 2
+
+    ||A|| = sqrt( 1^2 + 1^2 + 1^2 + 1^2 + 0^2 + 0^2 +  0^2 )  = 2
+
+    ||B|| = sqrt( 0^2 + 1^2 + 0^2 + 1^2 + 1^2 + 0^2 + 0^2 ) = 1.73
+
+    Similarity = (A . B) / (||A|| x ||B||) = 2/(2 x 1.73) = 0.57
+
+There are many vector search libraries are available like FAISS, Annoy 
 
   # Demo
   
   **UseCase**
   Create a Image Search application. Store the multi-dimensional vector in SQLite DB. Use cosine based search to find the similarity 
   
-  **Steps**
-  - Data preparation 
-      1.  Read all the images and covert into  vector using numpy
-      2.  Save the flatten array in the database
-   ```python
-       def load_images():
-            # Connect to the database or create a new one
-            db_connection = sqlite3.connect("image_database.db")
-            cursor = db_connection.cursor()
-            cursor.execute("CREATE TABLE IF NOT EXISTS images (id INTEGER PRIMARY KEY, file_name varchar(100), image_data BLOB)")
-            folder_path = "./training_images/" 
-            file_names = os.listdir(folder_path)
-        
-            # Read all the images and covert into  vector using numpy
-            for file_name in file_names:       
-                image_path = f"{folder_path}{file_name}" 
-                image = Image.open(image_path)
-        
-                # Convert the image to grayscale
-                gray_image = image.convert('L')
-                # gray_image.save(f'gray_{file_name}')
-               
-                image_vector = np.array(gray_image,dtype=np.float32).flatten()
-                cursor.execute("INSERT INTO images (file_name,image_data) VALUES (?,?)",(file_name,image_vector.tobytes()) )
-                # break        
-        
-            db_connection.commit()
-            db_connection.close()
-  ```
-  - Search by Image
-      1. Read the Image and convert it into array
-      2. Find the matching using dot product and cosine similarity
-      3. For More understating on cosine Similarity refer (https://www.machinelearningplus.com/nlp/cosine-similarity/)
-   ``` python
+  let's build logic for cosine search
+  ```python
        def cosine_similarity(a, b):
             # Ensure that both vectors have the same length
             min_length = min(len(a), len(b))
@@ -162,9 +167,42 @@ This makes them suitable for applications such as:
             if magnitude_a == 0 or magnitude_b == 0:
                 return 0.0
             similarity = dot_product / (magnitude_a * magnitude_b)
-            return similarity
-    
-    
+            return similarity    
+  ```
+  **Steps**
+  - Data preparation 
+      1.  Read all the images and convert into  vector using numpy
+      2.  Save the flatten array in the database
+   ```python
+       def load_images():
+            # Connect to the database or create a new one
+            db_connection = sqlite3.connect("image_database.db")
+            cursor = db_connection.cursor()
+            cursor.execute("CREATE TABLE IF NOT EXISTS images (id INTEGER PRIMARY KEY, file_name varchar(100), image_data BLOB)")
+            folder_path = "./training_images/" 
+            file_names = os.listdir(folder_path)
+        
+            # Read all the images and convert into  vector using numpy
+            for file_name in file_names:       
+                image_path = f"{folder_path}{file_name}" 
+                image = Image.open(image_path)
+        
+                # Convert the image to grayscale
+                gray_image = image.convert('L')
+                # gray_image.save(f'gray_{file_name}')
+               
+                image_vector = np.array(gray_image,dtype=np.float32).flatten()
+                cursor.execute("INSERT INTO images (file_name,image_data) VALUES (?,?)",(file_name,image_vector.tobytes()) )
+                # break        
+        
+            db_connection.commit()
+            db_connection.close()
+  ```
+  - Search by Image
+      1. Read the Image and convert it into array
+      2. Find the matching using dot product and cosine similarity
+      3. For More understating on cosine Similarity refer (https://www.machinelearningplus.com/nlp/cosine-similarity/)
+   ``` python    
     def find_similar_vectors(query_vector, threshold, database_path):
         conn = sqlite3.connect(database_path)
         cursor = conn.cursor()
@@ -194,6 +232,27 @@ This makes them suitable for applications such as:
     
     for vec_id, file_name,similarity in similar_vectors:
         print(f"Vector ID: {vec_id}, file_name: {file_name}, Similarity: {similarity}")
+
    ```
+# Vector Database
+
+A **vector database** is a type of database that stores and retrieves data using vectors as the fundamental data representation (Data points in a multi-dimensional space).
+
+Each dimension in the space corresponds to a specific feature or attribute of the data.
+
+Vector databases are particularly useful for working with high-dimensional data, such as images, audio, text, and other complex data types.
+
+In this, each data item is represented as a vector of numerical values, where each value corresponds to a feature of the data.
+
+These vectors can then be indexed and queried for various purposes, such as similarity search, clustering, classification, and recommendation systems.
+
+This makes them suitable for applications such as:
+
+- Content-based Retrieval: image and video search
+- Natural Language Processing (NLP): Find similar words or sentences based on their semantic meanings.
+- Recommendation Systems: For efficient recommendation of items based on similarity to a user's preferences.
+- Anomaly Detection: By identifying deviations from normal patterns.
+- Vector databases are engineered to perform high-speed similarity searches in massive datasets
+
     
 **Happy Coding!**
